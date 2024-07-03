@@ -49,6 +49,9 @@ let package = Package(
         ),
         .target(
             name: "MapboxNavigationObjC",
+            dependencies: [
+                .product(name: "MapLibre", package: "maplibre-gl-native-distribution")
+            ],
             path: "MapboxNavigationObjC"
         ),
         .testTarget(
