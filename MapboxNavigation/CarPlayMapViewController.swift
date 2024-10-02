@@ -66,6 +66,10 @@ class CarPlayMapViewController: UIViewController, MLNMapViewDelegate {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        mapView.locationManager.startUpdatingLocation()
+        mapView.minimumZoomLevel = 1
+        
         self.resetCamera(animated: false, altitude: CarPlayMapViewController.defaultAltitude)
     }
 
