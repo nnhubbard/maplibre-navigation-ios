@@ -384,6 +384,7 @@ extension CarPlayManager: CPApplicationDelegate {
 
         let mapTemplate = mapTemplate(for: interfaceController, viewController: viewController)
         self.mainMapTemplate = mapTemplate
+        self.mainMapTemplate?.automaticallyHidesNavigationBar = false
         interfaceController.setRootTemplate(mapTemplate, animated: false)
     }
 
