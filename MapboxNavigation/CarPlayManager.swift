@@ -568,7 +568,7 @@ extension CarPlayManager: CPListTemplateDelegate {
         completionHandler()
     }
 
-    public func calculateRouteAndStart(from fromWaypoint: Waypoint? = nil, to toWaypoint: Waypoint, completionHandler: @escaping () -> Void) {
+    public func calculateRouteAndStart(from fromWaypoint: Waypoint? = nil, to toWaypoint: Waypoint, waypoints routeWaypoints: [Waypoint]? = nil, completionHandler: @escaping () -> Void) {
         guard let rootViewController = mapViewController,
               let mapTemplate = interfaceController?.rootTemplate as? CPMapTemplate,
               let userLocation = rootViewController.mapView.userLocation,
@@ -581,7 +581,7 @@ extension CarPlayManager: CPListTemplateDelegate {
         let name = NSLocalizedString("CARPLAY_CURRENT_LOCATION", bundle: .mapboxNavigation, value: "Current Location", comment: "Name of the waypoint associated with the current location")
         let originWaypoint = fromWaypoint ?? Waypoint(location: location, heading: userLocation.heading, name: name)
 
-        let routeOptions = NavigationRouteOptions(waypoints: [originWaypoint, toWaypoint])
+        let routeOptions = routeWaypoints != nil ? NavigationRouteOptions(waypoints: routeWaypoints!) : NavigationRouteOptions(waypoints: [originWaypoint, toWaypoint])
         Directions.shared.calculate(routeOptions) { [weak self, weak mapTemplate] waypoints, routes, error in
             defer {
                 completionHandler()
