@@ -178,14 +178,14 @@ public protocol CarPlayManagerDelegate {
 
      - parameter carPlayManager: The shared CarPlay manager.
      */
-    @objc func mapTemplateDidAppear()
+    @objc func mapTemplateDidAppear(_ mapView: NavigationMapView)
     
     /**
      Called when the map template will appear
 
      - parameter carPlayManager: The shared CarPlay manager.
      */
-    @objc func mapTemplateWillAppear()
+    @objc func mapTemplateWillAppear(_ mapView: NavigationMapView)
 
 }
 
@@ -482,9 +482,12 @@ extension CarPlayManager: CPApplicationDelegate {
 @available(iOS 12.0, *)
 extension CarPlayManager: CPInterfaceControllerDelegate {
     public func templateWillAppear(_ template: CPTemplate, animated: Bool) {
-        if template == self.interfaceController?.rootTemplate {
+        if template == self.interfaceController?.rootTemplate, let carPlayMapViewController = mapViewController {
             mapViewController?.recenterButton.isHidden = true
-            self.delegate?.mapTemplateWillAppear()
+            
+            let mapView = carPlayMapViewController.mapView
+            self.delegate?.mapTemplateWillAppear(mapView)
+            
         }
 
         if let mapTemplate = template as? CPMapTemplate {
@@ -500,7 +503,7 @@ extension CarPlayManager: CPInterfaceControllerDelegate {
             mapView.removeWaypoints()
             mapView.setUserTrackingMode(.followWithCourse, animated: true, completionHandler: nil)
             
-            self.delegate?.mapTemplateDidAppear()
+            self.delegate?.mapTemplateDidAppear(mapView)
 
         }
     }
