@@ -158,6 +158,35 @@ public protocol CarPlayManagerDelegate {
      - returns: A Boolean value indicating whether to disable idle timer when carplay is connected and enable when disconnected.
      */
     @objc optional func carplayManagerShouldDisableIdleTimer(_ carPlayManager: CarPlayManager) -> Bool
+    
+    /**
+     Called when the carplay manager begins a pan
+
+     - parameter carPlayManager: The shared CarPlay manager.
+     */
+    @objc func carPlayManagerDidBeginPan(_ carPlayManager: CarPlayManager)
+    
+    /**
+     Called when the carplay manager ends a pan
+
+     - parameter carPlayManager: The shared CarPlay manager.
+     */
+    @objc func carPlayManagerDidEndPan(_ carPlayManager: CarPlayManager)
+    
+    /**
+     Called when the map template did appear
+
+     - parameter carPlayManager: The shared CarPlay manager.
+     */
+    @objc func mapTemplateDidAppear()
+    
+    /**
+     Called when the map template will appear
+
+     - parameter carPlayManager: The shared CarPlay manager.
+     */
+    @objc func mapTemplateWillAppear()
+
 }
 
 /**
@@ -454,6 +483,7 @@ extension CarPlayManager: CPInterfaceControllerDelegate {
     public func templateWillAppear(_ template: CPTemplate, animated: Bool) {
         if template == self.interfaceController?.rootTemplate {
             mapViewController?.recenterButton.isHidden = true
+            self.delegate?.mapTemplateWillAppear()
         }
 
         if let mapTemplate = template as? CPMapTemplate {
@@ -468,6 +498,9 @@ extension CarPlayManager: CPInterfaceControllerDelegate {
             mapView.removeRoutes()
             mapView.removeWaypoints()
             mapView.setUserTrackingMode(.followWithCourse, animated: true, completionHandler: nil)
+            
+            self.delegate?.mapTemplateDidAppear()
+
         }
     }
 
@@ -740,6 +773,7 @@ extension CarPlayManager: CPMapTemplateDelegate {
     public func mapTemplateDidBeginPanGesture(_ mapTemplate: CPMapTemplate) {
         if let navigationViewController = currentNavigator, mapTemplate == navigationViewController.mapTemplate {
             navigationViewController.beginPanGesture()
+            self.delegate?.carPlayManagerDidBeginPan(self)
         }
     }
     
@@ -747,6 +781,8 @@ extension CarPlayManager: CPMapTemplateDelegate {
         if mapTemplate == self.interfaceController?.rootTemplate, let carPlayMapViewController = mapViewController {
             carPlayMapViewController.recenterButton.isHidden = carPlayMapViewController.mapView.userTrackingMode != .none
         }
+        
+        self.delegate?.carPlayManagerDidEndPan(self)
 
         // We want the panning surface to have "friction". If the user did not "flick" fast/hard enough, do not update the map with a final animation.
         guard sqrtf(Float(velocity.x * velocity.x + velocity.y * velocity.y)) > 100 else {
