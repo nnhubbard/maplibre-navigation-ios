@@ -176,16 +176,23 @@ public protocol CarPlayManagerDelegate {
     /**
      Called when the map template did appear
 
-     - parameter carPlayManager: The shared CarPlay manager.
+     - parameter mapView: The mapView
      */
     @objc func mapTemplateDidAppear(_ mapView: NavigationMapView)
     
     /**
      Called when the map template will appear
 
-     - parameter carPlayManager: The shared CarPlay manager.
+     - parameter mapView: The mapView
      */
     @objc func mapTemplateWillAppear(_ mapView: NavigationMapView)
+    
+    /**
+     Called when the map view is added
+
+     - parameter mapView: The mapView
+     */
+    @objc func mapViewWasAdded(_ mapView: NavigationMapView)
 
 }
 
@@ -381,6 +388,8 @@ extension CarPlayManager: CPApplicationDelegate {
         let viewController = CarPlayMapViewController()
         window.rootViewController = viewController
         self.carWindow = window
+        
+        self.delegate?.mapViewWasAdded(viewController.mapView)
 
         let mapTemplate = mapTemplate(for: interfaceController, viewController: viewController)
         self.mainMapTemplate = mapTemplate
