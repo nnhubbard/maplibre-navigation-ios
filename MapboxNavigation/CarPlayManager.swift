@@ -582,6 +582,9 @@ extension CarPlayManager: CPListTemplateDelegate {
         let originWaypoint = fromWaypoint ?? Waypoint(location: location, heading: userLocation.heading, name: name)
 
         let routeOptions = routeWaypoints != nil ? NavigationRouteOptions(waypoints: routeWaypoints!) : NavigationRouteOptions(waypoints: [originWaypoint, toWaypoint])
+        routeOptions.profileIdentifier = .automobile
+        routeOptions.shapeFormat = .polyline6
+        
         Directions.shared.calculate(routeOptions) { [weak self, weak mapTemplate] waypoints, routes, error in
             defer {
                 completionHandler()
