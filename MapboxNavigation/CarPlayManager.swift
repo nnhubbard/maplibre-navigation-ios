@@ -242,6 +242,11 @@ public class CarPlayManager: NSObject {
      A Boolean value indicating whether the phone is connected to CarPlay.
      */
     @objc public var isConnectedToCarPlay = false
+    
+    /**
+     A Boolean value indicating whether this is the first load of CarPlay.
+     */
+    @objc public var isFirstLoad = true
 
     public fileprivate(set) var interfaceController: CPInterfaceController?
     public fileprivate(set) var carWindow: UIWindow?
@@ -509,7 +514,13 @@ extension CarPlayManager: CPInterfaceControllerDelegate {
         if template == self.interfaceController?.rootTemplate, let carPlayMapViewController = mapViewController {
             let mapView = carPlayMapViewController.mapView
             mapView.removeRoutes()
-            mapView.setUserTrackingMode(.followWithCourse, animated: true, completionHandler: nil)
+            
+            if isFirstLoad {
+                
+                mapView.setUserTrackingMode(.followWithCourse, animated: true, completionHandler: nil)
+                isFirstLoad = false
+                
+            }
             
             self.delegate?.mapTemplateDidAppear(mapView)
 
