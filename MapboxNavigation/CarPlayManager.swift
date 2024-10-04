@@ -509,7 +509,6 @@ extension CarPlayManager: CPInterfaceControllerDelegate {
         if template == self.interfaceController?.rootTemplate, let carPlayMapViewController = mapViewController {
             let mapView = carPlayMapViewController.mapView
             mapView.removeRoutes()
-            mapView.removeWaypoints()
             mapView.setUserTrackingMode(.followWithCourse, animated: true, completionHandler: nil)
             
             self.delegate?.mapTemplateDidAppear(mapView)
