@@ -310,38 +310,15 @@ public class CarPlayNavigationViewController: UIViewController, MLNMapViewDelega
         self.carSession.upcomingManeuvers = maneuvers
     }
     
-    func endOfRouteFeedbackTemplate() -> CPGridTemplate {
-        let buttonHandler: (_: CPGridButton) -> Void = { [weak self] _ in
-            // TODO: no such method exists, and the replacement candidate ignores the feedback sent, so ... ?
-//            self?.routeController.setEndOfRoute(rating: Int(button.titleVariants.first!.components(separatedBy: CharacterSet.decimalDigits.inverted).joined())!, comment: nil)
-            self?.carInterfaceController.popTemplate(animated: true)
-            self?.exitNavigation()
-        }
-        
-        var buttons: [CPGridButton] = []
-        let starImage = UIImage(named: "star", in: .mapboxNavigation, compatibleWith: nil)!
-        for i in 1 ... 5 {
-            let button = CPGridButton(titleVariants: ["\(i) star\(i == 1 ? "" : "s")"], image: starImage, handler: buttonHandler)
-            buttons.append(button)
-        }
-        
-        let gridTitle = NSLocalizedString("CARPLAY_RATE_RIDE", bundle: .mapboxNavigation, value: "Rate your ride", comment: "Title for rating template in CarPlay")
-        return CPGridTemplate(title: gridTitle, gridButtons: buttons)
-    }
-    
     func presentArrivalUI() {
         let exitTitle = NSLocalizedString("CARPLAY_EXIT_NAVIGATION", bundle: .mapboxNavigation, value: "Exit navigation", comment: "Title on the exit button in the arrival form")
         let exitAction = CPAlertAction(title: exitTitle, style: .cancel) { _ in
             self.exitNavigation()
             self.dismiss(animated: true, completion: nil)
         }
-        let rateTitle = NSLocalizedString("CARPLAY_RATE_TRIP", bundle: .mapboxNavigation, value: "Rate your trip", comment: "Title on rate button in CarPlay")
-        let rateAction = CPAlertAction(title: rateTitle, style: .default) { _ in
-            self.carInterfaceController.pushTemplate(self.endOfRouteFeedbackTemplate(), animated: true)
-        }
         let arrivalTitle = NSLocalizedString("CARPLAY_ARRIVED", bundle: .mapboxNavigation, value: "You have arrived", comment: "Title on arrival action sheet")
         let arrivalMessage = NSLocalizedString("CARPLAY_ARRIVED_MESSAGE", bundle: .mapboxNavigation, value: "What would you like to do?", comment: "Message on arrival action sheet")
-        let alert = CPActionSheetTemplate(title: arrivalTitle, message: arrivalMessage, actions: [rateAction, exitAction])
+        let alert = CPActionSheetTemplate(title: arrivalTitle, message: arrivalMessage, actions: [exitAction])
         self.carInterfaceController.presentTemplate(alert, animated: true)
     }
     

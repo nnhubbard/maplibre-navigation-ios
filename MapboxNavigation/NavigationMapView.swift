@@ -545,7 +545,11 @@ open class NavigationMapView: MLNMapView, UIGestureRecognizerDelegate {
             removeAnnotations(annotations ?? [])
             let destination = MLNPointAnnotation()
             destination.coordinate = lastLeg.destination.coordinate
-            addAnnotation(destination)
+            
+            // Cachly removed because we already have an annotation we added ourselves
+            // Instead of adding an annotation we need to add a layer
+            //addAnnotation(destination)
+            
         }
     }
 

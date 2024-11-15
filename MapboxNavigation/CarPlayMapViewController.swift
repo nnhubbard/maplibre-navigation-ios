@@ -57,9 +57,10 @@ class CarPlayMapViewController: UIViewController, MLNMapViewDelegate {
     override func loadView() {
         let mapView = NavigationMapView()
         mapView.delegate = self
-//        mapView.navigationMapDelegate = self
         mapView.logoView.isHidden = true
         mapView.attributionButton.isHidden = true
+        mapView.minimumZoomLevel = 2
+        mapView.compassView.isHidden = true
         
         view = mapView
     }
@@ -67,15 +68,14 @@ class CarPlayMapViewController: UIViewController, MLNMapViewDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        mapView.locationManager.startUpdatingLocation()
-        mapView.minimumZoomLevel = 1
-        
         self.resetCamera(animated: false, altitude: CarPlayMapViewController.defaultAltitude)
     }
 
     override open func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         styleManager?.ensureAppropriateStyle()
+        mapView.locationManager.startUpdatingLocation()
+        mapView.showsUserLocation = true
     }
 
     public func zoomInButton() -> CPMapButton {
@@ -103,14 +103,6 @@ class CarPlayMapViewController: UIViewController, MLNMapViewDelegate {
     }
 
     // MARK: - MLNMapViewDelegate
-
-    func mapView(_ mapView: MLNMapView, didUpdate userLocation: MLNUserLocation?) { }
-
-    func mapView(_ mapView: MLNMapView, didFinishLoading style: MLNStyle) {
-        if let mapView = mapView as? NavigationMapView {
-            mapView.localizeLabels()
-        }
-    }
     
     func resetCamera(animated: Bool = false, altitude: CLLocationDistance? = nil) {
         let camera = self.mapView.camera

@@ -496,25 +496,13 @@ extension CarPlayManager: CPApplicationDelegate {
 @available(iOS 12.0, *)
 extension CarPlayManager: CPInterfaceControllerDelegate {
     public func templateWillAppear(_ template: CPTemplate, animated: Bool) {
+        
         if template == self.interfaceController?.rootTemplate, let carPlayMapViewController = mapViewController {
             mapViewController?.recenterButton.isHidden = true
             
             let mapView = carPlayMapViewController.mapView
-            self.delegate?.mapTemplateWillAppear(mapView)
-            
-        }
-
-        if let mapTemplate = template as? CPMapTemplate {
-            resetPanButtons(mapTemplate)
-        }
-    }
-    
-    public func templateDidAppear(_ template: CPTemplate, animated: Bool) {
-        guard self.interfaceController?.topTemplate == self.mainMapTemplate else { return }
-        if template == self.interfaceController?.rootTemplate, let carPlayMapViewController = mapViewController {
-            let mapView = carPlayMapViewController.mapView
             mapView.removeRoutes()
-            
+            mapView.removeWaypoints()
             if isFirstLoad {
                 
                 mapView.setUserTrackingMode(.followWithCourse, animated: true, completionHandler: nil)
@@ -522,8 +510,21 @@ extension CarPlayManager: CPInterfaceControllerDelegate {
                 
             }
             
-            self.delegate?.mapTemplateDidAppear(mapView)
+            self.delegate?.mapTemplateWillAppear(mapView)
+            
+        }
 
+        if let mapTemplate = template as? CPMapTemplate {
+            resetPanButtons(mapTemplate)
+        }
+        
+    }
+    
+    public func templateDidAppear(_ template: CPTemplate, animated: Bool) {
+        guard self.interfaceController?.topTemplate == self.mainMapTemplate else { return }
+        if template == self.interfaceController?.rootTemplate, let carPlayMapViewController = mapViewController {
+            let mapView = carPlayMapViewController.mapView
+            self.delegate?.mapTemplateDidAppear(mapView)
         }
     }
 
@@ -593,23 +594,36 @@ extension CarPlayManager: CPListTemplateDelegate {
             guard let self, let mapTemplate else {
                 return
             }
-            if let error {
-                let okTitle = NSLocalizedString("CARPLAY_OK", bundle: .mapboxNavigation, value: "OK", comment: "CPNavigationAlert OK button title")
-                let okAction = CPAlertAction(title: okTitle, style: .default) { _ in
-                    if interfaceController.templates.count > 1 {
-                        interfaceController.popToRootTemplate(animated: true)
-                    }
-                }
-                let alert = CPNavigationAlert(titleVariants: [error.localizedDescription],
-                                              subtitleVariants: [error.localizedFailureReason ?? ""],
-                                              imageSet: nil,
-                                              primaryAction: okAction,
-                                              secondaryAction: nil,
-                                              duration: 0)
-                mapTemplate.present(navigationAlert: alert, animated: true)
+            if error != nil {
+                
+                showActionSheetAlert(title: NSLocalizedString("Directions Error", comment:"CarPlay directions error"), message: error?.localizedDescription)
+                
             }
             guard let waypoints, let routes else {
                 return
+            }
+            
+            // Updated the additional information to use the cache code
+            var additionalInformation = "";
+            if let cacheCode = toWaypoint.userInfo?["cacheCode"] {
+                additionalInformation = cacheCode
+            }
+            if let waypoints = routeWaypoints {
+                
+                var cacheCodes = [String]()
+                for waypoint in waypoints {
+                    
+                    if let cacheCode = waypoint.userInfo?["cacheCode"] {
+                        
+                        cacheCodes.append(cacheCode)
+                        
+                    }
+                    
+                }
+                if cacheCodes.count > 0 {
+                    additionalInformation = cacheCodes.joined(separator: ", ")
+                }
+               
             }
 
             let routeChoices = routes.map { route -> CPRouteChoice in
@@ -618,7 +632,8 @@ extension CarPlayManager: CPListTemplateDelegate {
                     self.shortDateComponentsFormatter.string(from: route.expectedTravelTime)!,
                     self.briefDateComponentsFormatter.string(from: route.expectedTravelTime)!
                 ]
-                let routeChoice = CPRouteChoice(summaryVariants: summaryVariants, additionalInformationVariants: [route.description], selectionSummaryVariants: [route.description])
+                
+                let routeChoice = CPRouteChoice(summaryVariants: summaryVariants, additionalInformationVariants: [additionalInformation], selectionSummaryVariants: [route.description])
                 routeChoice.userInfo = route
                 return routeChoice
             }
@@ -628,15 +643,15 @@ extension CarPlayManager: CPListTemplateDelegate {
             let trip = CPTrip(origin: MKMapItem(placemark: originPlacemark), destination: MKMapItem(placemark: destinationPlacemark), routeChoices: routeChoices)
             trip.userInfo = routeOptions
 
-            let goTitle = NSLocalizedString("CARPLAY_GO", bundle: .mapboxNavigation, value: "Go", comment: "Title for start button in CPTripPreviewTextConfiguration")
+            let goTitle = NSLocalizedString("Start", comment: "Start CarPlay route navigation")
             let alternativeRoutesTitle = NSLocalizedString("CARPLAY_MORE_ROUTES", bundle: .mapboxNavigation, value: "More Routes", comment: "Title for alternative routes in CPTripPreviewTextConfiguration")
             let overviewTitle = NSLocalizedString("CARPLAY_OVERVIEW", bundle: .mapboxNavigation, value: "Overview", comment: "Title for overview button in CPTripPreviewTextConfiguration")
             let defaultPreviewText = CPTripPreviewTextConfiguration(startButtonTitle: goTitle, additionalRoutesButtonTitle: alternativeRoutesTitle, overviewButtonTitle: overviewTitle)
 
             let previewMapTemplate = self.mapTemplate(forPreviewing: trip)
-            interfaceController.pushTemplate(previewMapTemplate, animated: true)
-
             previewMapTemplate.showTripPreviews([trip], textConfiguration: defaultPreviewText)
+            interfaceController.pushTemplate(previewMapTemplate, animated: true)
+            
         }
     }
 
