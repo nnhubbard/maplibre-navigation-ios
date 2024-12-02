@@ -505,7 +505,7 @@ extension CarPlayManager: CPInterfaceControllerDelegate {
             mapView.removeWaypoints()
             if isFirstLoad {
                 
-                mapView.setUserTrackingMode(.followWithCourse, animated: true, completionHandler: nil)
+                //mapView.setUserTrackingMode(.followWithCourse, animated: true, completionHandler: nil)
                 isFirstLoad = false
                 
             }

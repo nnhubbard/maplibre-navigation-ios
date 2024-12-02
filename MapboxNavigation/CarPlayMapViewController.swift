@@ -74,8 +74,6 @@ class CarPlayMapViewController: UIViewController, MLNMapViewDelegate {
     override open func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         styleManager?.ensureAppropriateStyle()
-        mapView.locationManager.startUpdatingLocation()
-        mapView.showsUserLocation = true
     }
 
     public func zoomInButton() -> CPMapButton {
