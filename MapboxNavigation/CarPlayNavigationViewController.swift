@@ -213,6 +213,7 @@ public class CarPlayNavigationViewController: UIViewController, MLNMapViewDelega
         self.mapView.showRoutes([self.routeController.routeProgress.route])
         self.mapView.showWaypoints(self.routeController.routeProgress.route)
         self.mapView.recenterMap()
+        NotificationCenter.default.post(name: Notification.Name("carPlayNavigationMapViewStyleLoaded"), object: nil)
     }
     
     @objc func visualInstructionDidChange(_ notification: NSNotification) {
