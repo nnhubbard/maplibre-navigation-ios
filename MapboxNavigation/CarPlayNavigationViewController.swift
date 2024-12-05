@@ -18,6 +18,13 @@ public class CarPlayNavigationViewController: UIViewController, MLNMapViewDelega
      */
     @objc public weak var carPlayNavigationDelegate: CarPlayNavigationDelegate?
     
+    /**
+     Provides access to various speech synthesizer options.
+     
+     See `RouteVoiceController` for more information.
+     */
+    public var voiceController: RouteVoiceController?
+    
     @objc public var drivingSide: DrivingSide = .right
     
     public private(set) var mapView = NavigationMapView()
@@ -52,14 +59,16 @@ public class CarPlayNavigationViewController: UIViewController, MLNMapViewDelega
      
      - postcondition: Call `startNavigationSession(for:)` after initializing this object to begin navigation.
      */
-    @objc(initForRouteController:mapTemplate:interfaceController:ignoreRouteControllerUpdates:)
+    @objc(initForRouteController:mapTemplate:interfaceController:ignoreRouteControllerUpdates:voiceController:)
     public init(for routeController: RouteController,
                 mapTemplate: CPMapTemplate,
                 interfaceController: CPInterfaceController,
-                resetRouteControllerDelegate: Bool = true) {
+                resetRouteControllerDelegate: Bool = true,
+                voiceController: RouteVoiceController = RouteVoiceController()) {
         self.routeController = routeController
         self.mapTemplate = mapTemplate
         self.carInterfaceController = interfaceController
+        self.voiceController = voiceController
         super.init(nibName: nil, bundle: nil)
 
         styleManager = StyleManager(self, dayStyle: DayStyle(demoStyle: ()), nightStyle: NightStyle(demoStyle: ()))
