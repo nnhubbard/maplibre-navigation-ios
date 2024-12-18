@@ -107,7 +107,7 @@ class CarPlayMapViewController: UIViewController, MLNMapViewDelegate {
         if let altitude {
             camera.altitude = altitude
         }
-        camera.pitch = 60
+        camera.pitch = 40
         self.mapView.setCamera(camera, animated: animated)
     }
     
