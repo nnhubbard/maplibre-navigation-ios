@@ -320,33 +320,68 @@ public class CarPlayNavigationViewController: UIViewController, MLNMapViewDelega
         self.carSession.upcomingManeuvers = maneuvers
     }
     
-    func presentArrivalUI() {
-        let exitTitle = NSLocalizedString("CARPLAY_EXIT_NAVIGATION", bundle: .mapboxNavigation, value: "Exit navigation", comment: "Title on the exit button in the arrival form")
-        let exitAction = CPAlertAction(title: exitTitle, style: .cancel) { _ in
+    func presentArrivalUI(for waypoint: Waypoint) {
+        
+        let primaryAction = CPAlertAction(title: NSLocalizedString("End Navigation", comment: "CarPlay: End navigation button text"), style: .default) { _ in
             self.exitNavigation()
-            self.dismiss(animated: true, completion: nil)
+            
+            if #available(iOS 13.0, *) {
+                Task {
+                    await self.mapTemplate.dismissNavigationAlert(animated: true)
+                }
+            }
+            
         }
-        let arrivalTitle = NSLocalizedString("CARPLAY_ARRIVED", bundle: .mapboxNavigation, value: "You have arrived", comment: "Title on arrival action sheet")
-        let arrivalMessage = NSLocalizedString("CARPLAY_ARRIVED_MESSAGE", bundle: .mapboxNavigation, value: "What would you like to do?", comment: "Message on arrival action sheet")
-        let alert = CPActionSheetTemplate(title: arrivalTitle, message: arrivalMessage, actions: [exitAction])
-        self.carInterfaceController.presentTemplate(alert, animated: true)
+        
+        let arrivedTitle = String.localizedStringWithFormat(
+            NSLocalizedString("Arrived at %@", comment: "CarPlay: Arrived at geocache"),
+            waypoint.name ?? "")
+        
+        let alert = CPNavigationAlert(titleVariants: [arrivedTitle],
+                                      subtitleVariants: [NSLocalizedString("You have arrived at your final geocache.", comment: "CarPlay: Arrived at final geocache")],
+                                      image: nil,
+                                      primaryAction: primaryAction,
+                                      secondaryAction: nil,
+                                      duration: 0)
+        
+        self.mapTemplate.present(navigationAlert: alert, animated: true)
+        
     }
     
     func presentWayointArrivalUI(for waypoint: Waypoint) {
-        var title = NSLocalizedString("CARPLAY_ARRIVED", bundle: .mapboxNavigation, value: "You have arrived", comment: "Title on arrival action sheet")
-        if let name = waypoint.name {
-            title = name
-        }
         
-        let continueTitle = NSLocalizedString("CARPLAY_CONTINUE", bundle: .mapboxNavigation, value: "Continue", comment: "Title on continue button in CarPlay")
-        let continueAlert = CPAlertAction(title: continueTitle, style: .default) { _ in
+        let primaryAction = CPAlertAction(title: NSLocalizedString("Continue", comment: "CarPlay: Continue navigation"), style: .default) { _ in
             self.routeController.routeProgress.legIndex += 1
-            self.carInterfaceController.dismissTemplate(animated: true)
+            if #available(iOS 13.0, *) {
+                Task {
+                    await self.mapTemplate.dismissNavigationAlert(animated: true)
+                }
+            }
+            self.updateRouteOnMap()
+        }
+        let secondaryAction = CPAlertAction(title: NSLocalizedString("Log Cache", comment: "CarPlay: Log geocache"), style: .cancel) { _ in
+            self.routeController.routeProgress.legIndex += 1
+            if #available(iOS 13.0, *) {
+                Task {
+                    await self.mapTemplate.dismissNavigationAlert(animated: true)
+                }
+            }
             self.updateRouteOnMap()
         }
         
-        let waypointArrival = CPAlertTemplate(titleVariants: [title], actions: [continueAlert])
-        self.carInterfaceController.presentTemplate(waypointArrival, animated: true)
+        let arrivedTitle = String.localizedStringWithFormat(
+            NSLocalizedString("Arrived at %@", comment: "CarPlay: Arrived at geocache"),
+            waypoint.name ?? "")
+        
+        let alert = CPNavigationAlert(titleVariants: [arrivedTitle],
+                                      subtitleVariants: [NSLocalizedString("You have arrived at a cache on your route.", comment: "CarPlay: Arrived at a geocache on your route")],
+                                      image: nil,
+                                      primaryAction: primaryAction,
+                                      secondaryAction: secondaryAction,
+                                      duration: 0)
+        
+        self.mapTemplate.present(navigationAlert: alert, animated: true)
+        
     }
 }
 
@@ -372,7 +407,7 @@ extension CarPlayNavigationViewController: StyleManagerDelegate {
 extension CarPlayNavigationViewController: RouteControllerDelegate {
     public func routeController(_ routeController: RouteController, didArriveAt waypoint: Waypoint) -> Bool {
         if routeController.routeProgress.isFinalLeg {
-            self.presentArrivalUI()
+            self.presentArrivalUI(for: waypoint)
             self.carPlayNavigationDelegate?.carPlayNavigationViewControllerDidArrive(self)
         } else {
             self.presentWayointArrivalUI(for: waypoint)
