@@ -322,6 +322,8 @@ public class CarPlayNavigationViewController: UIViewController, MLNMapViewDelega
     
     func presentArrivalUI(for waypoint: Waypoint) {
         
+        NotificationCenter.default.post(name: Notification.Name("carPlayNavigationArrivalFinal"), object: nil, userInfo: ["waypoint": waypoint])
+        
         let primaryAction = CPAlertAction(title: NSLocalizedString("End Navigation", comment: "CarPlay: End navigation button text"), style: .default) { _ in
             self.exitNavigation()
             
@@ -348,7 +350,9 @@ public class CarPlayNavigationViewController: UIViewController, MLNMapViewDelega
         
     }
     
-    func presentWayointArrivalUI(for waypoint: Waypoint) {
+    func presentWaypointArrivalUI(for waypoint: Waypoint) {
+        
+        NotificationCenter.default.post(name: Notification.Name("carPlayNavigationArrivalWaypoint"), object: nil, userInfo: ["waypoint": waypoint])
         
         let primaryAction = CPAlertAction(title: NSLocalizedString("Continue", comment: "CarPlay: Continue navigation"), style: .default) { _ in
             self.routeController.routeProgress.legIndex += 1
@@ -410,7 +414,7 @@ extension CarPlayNavigationViewController: RouteControllerDelegate {
             self.presentArrivalUI(for: waypoint)
             self.carPlayNavigationDelegate?.carPlayNavigationViewControllerDidArrive(self)
         } else {
-            self.presentWayointArrivalUI(for: waypoint)
+            self.presentWaypointArrivalUI(for: waypoint)
         }
         return false
     }
