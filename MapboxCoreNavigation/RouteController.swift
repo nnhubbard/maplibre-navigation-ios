@@ -53,7 +53,7 @@ open class RouteController: NSObject, Router {
     /**
      If true, the `RouteController` attempts to calculate a more optimal route for the user on an interval defined by `routeControllerProactiveReroutingInterval`.
      */
-    @objc public var reroutesProactively = false
+    @objc public var reroutesProactively = true
 
     /**
      A `TunnelIntersectionManager` used for animating the use user puck when and if a user enters a tunnel.
