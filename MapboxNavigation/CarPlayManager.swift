@@ -147,7 +147,7 @@ public protocol CarPlayManagerDelegate {
      
      - parameter carPlayManager: The shared CarPlay manager.
      */
-    @objc func carPlayManagerDidEndNavigation(_ carPlayManager: CarPlayManager)
+    @objc func carPlayManagerDidEndNavigation(_ carPlayManager: CarPlayManager, byCanceling canceled: Bool)
 
     /**
      Called when the carplay manager will disable the idle timer.
@@ -359,9 +359,9 @@ public class CarPlayManager: NSObject {
         self.delegate?.carPlayManager(self, didBeginNavigationWith: routeController, and: navigationViewController)
     }
 
-    func endNavigation() {
+    func endNavigation(byCanceling canceled: Bool) {
         currentNavigator = nil
-        delegate?.carPlayManagerDidEndNavigation(self)
+        delegate?.carPlayManagerDidEndNavigation(self, byCanceling: canceled)
     }
 
     public func showActionSheetAlert(title: String, message: String?) {
@@ -369,9 +369,15 @@ public class CarPlayManager: NSObject {
             return
         }
 
-        let okAction = CPAlertAction(title: "OK", style: .default) { _ in}
+        let okAction = CPAlertAction(title: NSLocalizedString("OK", comment: "CarPlay: OK button"), style: .default) { _ in}
         let actionSheetTemplate = CPActionSheetTemplate(title: title, message: message, actions: [okAction])
-        interfaceController.presentTemplate(actionSheetTemplate, animated: true)
+        interfaceController.dismissTemplate(animated: true)
+        if #available(iOS 14.0, *) {
+            interfaceController.presentTemplate(actionSheetTemplate, animated: true) { (result: Bool, error: Error?) in
+                
+                
+            }
+        }
     }
 }
 
@@ -502,10 +508,12 @@ extension CarPlayManager: CPInterfaceControllerDelegate {
             
             let mapView = carPlayMapViewController.mapView
             mapView.removeRoutes()
-            mapView.removeWaypoints()
+            
+            // We don't want to remove waypoints here as we want to retain the waypoints on the map
+            //mapView.removeWaypoints()
+            
             if isFirstLoad {
                 
-                //mapView.setUserTrackingMode(.followWithCourse, animated: true, completionHandler: nil)
                 isFirstLoad = false
                 
             }
@@ -819,7 +827,7 @@ extension CarPlayManager: CPMapTemplateDelegate {
         let mapView = carPlayMapViewController.mapView
         mapView.removeRoutes()
         mapView.removeWaypoints()
-        endNavigation()
+        endNavigation(byCanceling: true)
     }
 
     public func mapTemplateDidBeginPanGesture(_ mapTemplate: CPMapTemplate) {
@@ -934,7 +942,7 @@ extension CarPlayManager: CPMapTemplateDelegate {
 @available(iOS 12.0, *)
 extension CarPlayManager: CarPlayNavigationDelegate {
     public func carPlayNavigationViewControllerDidArrive(_: CarPlayNavigationViewController) {
-        endNavigation()
+        endNavigation(byCanceling: true)
     }
 
     public func carPlayNavigationViewControllerDidDismiss(_ carPlayNavigationViewController: CarPlayNavigationViewController, byCanceling canceled: Bool) {
@@ -944,7 +952,7 @@ extension CarPlayManager: CarPlayNavigationDelegate {
         if let interfaceController, interfaceController.templates.count > 1 {
             interfaceController.popToRootTemplate(animated: true)
         }
-        endNavigation()
+        endNavigation(byCanceling: canceled)
     }
 }
 #else

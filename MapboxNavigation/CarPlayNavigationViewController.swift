@@ -325,7 +325,7 @@ public class CarPlayNavigationViewController: UIViewController, MLNMapViewDelega
         NotificationCenter.default.post(name: Notification.Name("carPlayNavigationArrivalFinal"), object: nil, userInfo: ["waypoint": waypoint])
         
         let primaryAction = CPAlertAction(title: NSLocalizedString("End Navigation", comment: "CarPlay: End navigation button text"), style: .default) { _ in
-            self.exitNavigation()
+            self.exitNavigation(byCanceling: true)
             
             if #available(iOS 13.0, *) {
                 Task {
