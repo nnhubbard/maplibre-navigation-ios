@@ -592,10 +592,7 @@ extension CarPlayManager: CPListTemplateDelegate {
         
         // Make sure to add the orignal waypoint to the start
         var routeOptions = NavigationRouteOptions(waypoints: [originWaypoint, toWaypoint])
-        
-        // Include the currently selected locale
-        routeOptions.locale = Locale.current
-        
+
         if routeWaypoints != nil, let routeWaypoints {
             
             var updatedRouteWaypoints:[Waypoint] = routeWaypoints
@@ -607,6 +604,7 @@ extension CarPlayManager: CPListTemplateDelegate {
 
         routeOptions.profileIdentifier = .automobile
         routeOptions.shapeFormat = .polyline6
+        routeOptions.locale = Locale.current
         
         Directions.shared.calculate(routeOptions) { [weak self, weak mapTemplate] waypoints, routes, error in
             defer {
