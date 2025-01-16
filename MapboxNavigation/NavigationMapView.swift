@@ -124,6 +124,11 @@ open class NavigationMapView: MLNMapView, UIGestureRecognizerDelegate {
     }
     
     /**
+     The minimum default insets from the content frame to the edges of the user course view.
+     */
+    static let courseViewMinimumInsets = UIEdgeInsets(top: 50, left: 50, bottom: 50, right: 50)
+    
+    /**
      Center point of the user course view in screen coordinates relative to the map view.
      - seealso: NavigationMapViewDelegate.navigationMapViewUserAnchorPoint(_:)
      */
@@ -132,7 +137,16 @@ open class NavigationMapView: MLNMapView, UIGestureRecognizerDelegate {
             return anchorPoint
         }
         
-        let contentFrame = bounds.inset(by: safeAreaInsets)
+        // Inset by the safe area to avoid notches.
+        // Inset by the content inset to avoid application-defined content.
+        let safeArea = bounds.inset(by: safeAreaInsets)
+        var contentFrame = safeArea.inset(by: contentInset)
+
+        // Avoid letting the puck go partially off-screen, and add a comfortable padding beyond that.
+        let courseViewBounds = userCourseView?.bounds ?? .zero
+        
+        contentFrame = contentFrame.insetBy(dx: min(NavigationMapView.courseViewMinimumInsets.left + courseViewBounds.width / 2.0, contentFrame.width / 2.0),
+                                                    dy: min(NavigationMapView.courseViewMinimumInsets.top + courseViewBounds.height / 2.0, contentFrame.height / 2.0))
         let courseViewWidth = self.userCourseView?.frame.width ?? 0
         let courseViewHeight = self.userCourseView?.frame.height ?? 0
         let edgePadding = UIEdgeInsets(top: 50 + courseViewHeight / 2,

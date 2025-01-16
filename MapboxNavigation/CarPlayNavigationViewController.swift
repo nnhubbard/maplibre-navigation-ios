@@ -31,6 +31,8 @@ public class CarPlayNavigationViewController: UIViewController, MLNMapViewDelega
 
     var routeController: RouteController
     let shieldHeight: CGFloat = 16
+    var mapViewLeftSafeAreaBalancingConstraint: NSLayoutConstraint?
+    var mapViewRightSafeAreaBalancingConstraint: NSLayoutConstraint?
     
     var carSession: CPNavigationSession!
     var mapTemplate: CPMapTemplate
@@ -100,15 +102,28 @@ public class CarPlayNavigationViewController: UIViewController, MLNMapViewDelega
         mapView.defaultAltitude = 500
         mapView.zoomedOutMotorwayAltitude = 1000
         mapView.longManeuverDistance = 500
+        
     }
 
     override public func viewDidLoad() {
         super.viewDidLoad()
 
         mapView.frame = view.bounds
-        mapView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        mapView.translatesAutoresizingMaskIntoConstraints = false
         mapView.delegate = self
         view.addSubview(mapView)
+        
+        mapView.navigationMapDelegate = self
+        
+        // These constraints don’t account for language direction, because the
+        // safe area insets are nondirectional and may be affected by the side
+        // on which the driver is sitting.
+        mapViewRightSafeAreaBalancingConstraint = NSLayoutConstraint(item: mapView, attribute: .left, relatedBy: .equal, toItem: view, attribute: .left, multiplier: 1, constant: 0)
+        view.addConstraint(mapViewRightSafeAreaBalancingConstraint!)
+        mapViewLeftSafeAreaBalancingConstraint = NSLayoutConstraint(item: mapView, attribute: .right, relatedBy: .equal, toItem: view, attribute: .right, multiplier: 1, constant: 0)
+        view.addConstraint(mapViewLeftSafeAreaBalancingConstraint!)
+        view.addConstraint(NSLayoutConstraint(item: mapView, attribute: .top, relatedBy: .equal, toItem: view, attribute: .top, multiplier: 1, constant: 0))
+        view.addConstraint(NSLayoutConstraint(item: mapView, attribute: .bottom, relatedBy: .equal, toItem: view, attribute: .bottom, multiplier: 1, constant: 0))
 
         self.resumeNotifications()
         self.routeController.resume()
@@ -441,5 +456,22 @@ public protocol CarPlayNavigationDelegate {
      - parameter carPlayNavigationViewController: The CarPlay navigation view controller that was dismissed.
      */
     @objc func carPlayNavigationViewControllerDidArrive(_ carPlayNavigationViewController: CarPlayNavigationViewController)
+}
+
+@available(iOS 12.0, *)
+extension CarPlayNavigationViewController: NavigationMapViewDelegate {
+    public func navigationMapViewUserAnchorPoint(_ mapView: NavigationMapView) -> CGPoint {
+        // Inset by the content inset to avoid application-defined content.
+        var contentFrame = mapView.bounds.inset(by: mapView.contentInset)
+
+        // Avoid letting the puck go partially off-screen, and add a comfortable padding beyond that.
+        let courseViewBounds = mapView.userCourseView?.bounds ?? .zero
+        contentFrame = contentFrame.insetBy(dx: min(NavigationMapView.courseViewMinimumInsets.left + courseViewBounds.width / 2.0, contentFrame.width / 2.0),
+                                            dy: min(NavigationMapView.courseViewMinimumInsets.top + courseViewBounds.height / 2.0, contentFrame.height / 2.0))
+
+        // Get the bottom-center of the remaining frame.
+        assert(!contentFrame.isInfinite)
+        return CGPoint(x: contentFrame.midX, y: contentFrame.maxY)
+    }
 }
 #endif
