@@ -247,6 +247,11 @@ public class CarPlayManager: NSObject {
      A Boolean value indicating whether this is the first load of CarPlay.
      */
     @objc public var isFirstLoad = true
+    
+    /**
+     Distance measurement
+     */
+    @objc public var distanceMeasurementSystem: MeasurementSystem = .metric
 
     public fileprivate(set) var interfaceController: CPInterfaceController?
     public fileprivate(set) var carWindow: UIWindow?
@@ -605,6 +610,7 @@ extension CarPlayManager: CPListTemplateDelegate {
         routeOptions.profileIdentifier = .automobile
         routeOptions.shapeFormat = .polyline6
         routeOptions.locale = Locale.current
+        routeOptions.distanceMeasurementSystem = distanceMeasurementSystem
         
         Directions.shared.calculate(routeOptions) { [weak self, weak mapTemplate] waypoints, routes, error in
             defer {
@@ -737,7 +743,6 @@ extension CarPlayManager: CPMapTemplateDelegate {
 
         let mapView = carPlayMapViewController.mapView
         mapView.removeRoutes()
-        mapView.removeWaypoints()
 
         self.delegate?.carPlayManager(self, didBeginNavigationWith: routeController, and: navigationViewController)
     }
