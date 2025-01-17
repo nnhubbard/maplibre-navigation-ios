@@ -366,6 +366,8 @@ public class CarPlayManager: NSObject {
 
     func endNavigation(byCanceling canceled: Bool) {
         currentNavigator = nil
+        routeController?.endNavigation()
+        routeController = nil
         delegate?.carPlayManagerDidEndNavigation(self, byCanceling: canceled)
     }
 
@@ -713,6 +715,7 @@ extension CarPlayManager: CPMapTemplateDelegate {
         } else {
             self.createRouteController(with: route)
         }
+        self.routeController = routeController
 
         if interfaceController.templates.count > 1 {
             interfaceController.popToRootTemplate(animated: false)
