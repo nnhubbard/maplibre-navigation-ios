@@ -402,6 +402,30 @@ public class CarPlayNavigationViewController: UIViewController, MLNMapViewDelega
         self.mapTemplate.present(navigationAlert: alert, animated: true)
         
     }
+    
+    public func mapView(_ mapView: MLNMapView, imageFor annotation: MLNAnnotation) -> MLNAnnotationImage? {
+        
+        if let geocacheAnnotation = annotation as? CarPlayImageAnnotation {
+            
+            if let image = geocacheAnnotation.image, let identifier = geocacheAnnotation.identifier {
+                
+                var annotationImage = mapView.dequeueReusableAnnotationImage(withIdentifier: identifier)
+
+                if annotationImage == nil {
+                    
+                    annotationImage = MLNAnnotationImage(image: image, reuseIdentifier:identifier)
+                    
+                }
+                
+                return annotationImage
+                
+            }
+            
+        }
+
+        return nil
+
+    }
 }
 
 @available(iOS 12.0, *)

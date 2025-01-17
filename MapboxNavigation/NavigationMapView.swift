@@ -532,6 +532,7 @@ open class NavigationMapView: MLNMapView, UIGestureRecognizerDelegate {
         }
 
         let waypoints: [Waypoint] = Array(route.legs.map(\.destination).dropLast())
+        let allWaypoints: [Waypoint] = route.legs.map { $0.destination }
         
         let source = self.navigationMapDelegate?.navigationMapView?(self, shapeFor: waypoints, legIndex: legIndex) ?? self.shape(for: waypoints, legIndex: legIndex)
         if route.routeOptions.waypoints.count > 2 { // are we on a multipoint route?
@@ -555,16 +556,23 @@ open class NavigationMapView: MLNMapView, UIGestureRecognizerDelegate {
             }
         }
         
-        if let lastLeg = route.legs.last {
-            removeAnnotations(annotations ?? [])
-            let destination = MLNPointAnnotation()
-            destination.coordinate = lastLeg.destination.coordinate
+        if allWaypoints.count > 0 {
             
-            // Cachly removed because we already have an annotation we added ourselves
-            // Instead of adding an annotation we need to add a layer
-            //addAnnotation(destination)
+            //removeAnnotations(annotations ?? [])
+            
+            // Convert waypoints to image annotations
+            for waypoint in allWaypoints {
+                
+                let imageAnnotation = CarPlayImageAnnotation()
+                imageAnnotation.coordinate = waypoint.coordinate
+                imageAnnotation.image = waypoint.image
+                imageAnnotation.identifier = "\(waypoint.coordinate.latitude),\(waypoint.coordinate.longitude)"
+                addAnnotation(imageAnnotation)
+                
+            }
             
         }
+        
     }
 
     /**

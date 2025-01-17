@@ -129,6 +129,28 @@ class CarPlayMapViewController: UIViewController, MLNMapViewDelegate {
         
         self.mapView.fit(to: active, animated: false)
     }
+    
+    public func mapView(_ mapView: MLNMapView, imageFor annotation: MLNAnnotation) -> MLNAnnotationImage? {
+        
+        let imageAnnotation = annotation as? CarPlayImageAnnotation
+        if let image = imageAnnotation?.image, let identifier = imageAnnotation?.identifier {
+            
+            var annotationImage = mapView.dequeueReusableAnnotationImage(withIdentifier: identifier)
+
+            if annotationImage == nil {
+                
+                annotationImage = MLNAnnotationImage(image: image, reuseIdentifier:identifier)
+                
+            }
+            
+            return annotationImage
+            
+        }
+
+        return nil
+
+    }
+    
 }
 
 @available(iOS 12.0, *)
