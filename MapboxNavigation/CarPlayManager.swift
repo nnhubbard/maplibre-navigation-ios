@@ -367,7 +367,6 @@ public class CarPlayManager: NSObject {
     func endNavigation(byCanceling canceled: Bool) {
         currentNavigator = nil
         routeController?.endNavigation()
-        routeController = nil
         delegate?.carPlayManagerDidEndNavigation(self, byCanceling: canceled)
     }
 
@@ -842,8 +841,8 @@ extension CarPlayManager: CPMapTemplateDelegate {
     public func mapTemplateDidBeginPanGesture(_ mapTemplate: CPMapTemplate) {
         if let navigationViewController = currentNavigator, mapTemplate == navigationViewController.mapTemplate {
             navigationViewController.beginPanGesture()
-            self.delegate?.carPlayManagerDidBeginPan(self)
         }
+        self.delegate?.carPlayManagerDidBeginPan(self)
     }
     
     public func mapTemplate(_ mapTemplate: CPMapTemplate, shouldShowNotificationFor maneuver: CPManeuver) -> Bool {
