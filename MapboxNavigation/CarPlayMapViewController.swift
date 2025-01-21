@@ -114,6 +114,7 @@ class CarPlayMapViewController: UIViewController, MLNMapViewDelegate {
     }
     
     override func viewSafeAreaInsetsDidChange() {
+        
         self.mapView.setContentInset(self.mapView.safeAreaInsets, animated: false, completionHandler: nil)
         
         guard self.isOverviewingRoutes else {
@@ -160,11 +161,7 @@ extension CarPlayMapViewController: StyleManagerDelegate {
     }
     
     func styleManager(_ styleManager: StyleManager, didApply style: Style) {
-        let styleURL = style.previewMapStyleURL
-        if self.mapView.styleURL != styleURL {
-            self.mapView.style?.transition = MLNTransition(duration: 0.5, delay: 0)
-            self.mapView.styleURL = styleURL
-        }
+        NotificationCenter.default.post(name: Notification.Name("styleManagerDidApplyStyle"), object: nil, userInfo: ["style": style])
     }
     
     func styleManagerDidRefreshAppearance(_ styleManager: StyleManager) {

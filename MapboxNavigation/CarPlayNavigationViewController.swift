@@ -435,10 +435,7 @@ extension CarPlayNavigationViewController: StyleManagerDelegate {
     }
     
     public func styleManager(_ styleManager: StyleManager, didApply style: Style) {
-        if self.mapView.styleURL != style.mapStyleURL {
-            self.mapView.style?.transition = MLNTransition(duration: 0.5, delay: 0)
-            self.mapView.styleURL = style.mapStyleURL
-        }
+        
     }
     
     public func styleManagerDidRefreshAppearance(_ styleManager: StyleManager) {
